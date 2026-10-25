@@ -25,6 +25,10 @@ In **Edit → Project Settings → Player**:
 ## 4. Set up the scenes
 - [ ] Your project's own files go in `Assets/Project Folder/` (or a folder named after the project).
       Start from `Assets/Project Folder/Main Scene.unity`.
+- [ ] **Pick the Base Scene**: `Base Scene` (ResXR hands — enough for ResXR buttons, panels, slider, pinch and the
+      calibrator) or `Base Scene With Meta Interactions` (adds Meta's interaction rig — needed only for the Meta UI Set,
+      Meta poke/ray/grab, the `Assets/TAUXR/Meta components` examples or the Live Monitor). Both are in
+      `Assets/ResXR/Base Scene/`.
 - [ ] **File → Build Profiles**: the Base Scene must be first, your first scene second. Remove the demo scenes.
 - [ ] **Room calibration** — only if the virtual scene must line up with a real room (see FlipMazeResXR for a
       working example). It is off by default and the calibrator is not in the Base Scene:

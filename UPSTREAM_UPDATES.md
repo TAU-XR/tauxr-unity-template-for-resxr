@@ -55,6 +55,7 @@ Git will probably stop with conflicts. Expect them in the files we deliberately 
 | ------- | ---------- |
 | `Packages/manifest.json`, `Packages/packages-lock.json` | Keep **ours** (our SDK/Unity versions). If ResXR added a new package, add that line by hand. Then let Unity regenerate the lock file. |
 | `ProjectSettings/*` | Keep **ours**: `git checkout --ours ProjectSettings/ && git add ProjectSettings/` |
+| `Assets/ResXR/Meta components/*` | We moved this folder to `Assets/TAUXR/Meta components/`. Git usually follows the rename; if ResXR's change lands in the old path instead, move it across by hand (in the Unity editor, so the `.meta` files go with it). |
 | ResXR scripts we changed (list in the README, "Changes from ResXR") | Open the file and combine: keep our fix *and* their change. |
 | Scenes / prefabs (`.unity`, `.prefab`) | Usually keep **ours** and re-apply their change in the Unity editor — merging scene YAML by hand is error-prone. |
 

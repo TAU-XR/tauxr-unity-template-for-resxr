@@ -7,6 +7,7 @@ so `Assets/ResXR` stays as close as possible to upstream ResXR and is easier to 
 | ------ | -------------- |
 | `Scripts/` | Reusable runtime scripts (e.g. `QuestFoveationSetup`) |
 | `Editor/` | Editor-only tools and import defaults (e.g. `TAUXRTextureImportDefaults`) |
+| `Meta components/` | Examples of Meta Interaction SDK components (grab, poke button, slider) — moved here from `Assets/ResXR`. Need `Base Scene With Meta Interactions` |
 | `UI Set/` | Optional add-on for Meta's Quest-style UI Set — see [UI Set/README.md](UI%20Set/README.md) |
 
 Add `Prefabs/`, `Materials/`, etc. when there is something to put in them.

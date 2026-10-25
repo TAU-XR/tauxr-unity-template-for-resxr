@@ -29,7 +29,7 @@ studio tool that is here at that moment. Changes made to the template later do n
 | Path | Contents |
 | ---- | -------- |
 | `Assets/ResXR/` | ResXR framework: Base Scene, `ResXRPlayer` (hands, pinch, fade), flow management (Session → Task → Trial), room calibrator, data recording, `Shared Utils` (panels, buttons, slider, position marks), demo experiments |
-| `Assets/TAUXR/` | Studio scripts shared by all projects — see [Assets/TAUXR/README.md](Assets/TAUXR/README.md) |
+| `Assets/TAUXR/` | Studio scripts shared by all projects, the Meta UI Set add-on and the Meta components examples (grab, poke button, slider) — see [Assets/TAUXR/README.md](Assets/TAUXR/README.md) |
 | `Assets/Project Folder/` | Your project's own content. Start from `Main Scene.unity` |
 | `STUDIO_SETUP.md` | New-project checklist |
 | `PROJECT_README_TEMPLATE.md` | README to fill in for each new project |
@@ -38,6 +38,27 @@ studio tool that is here at that moment. Changes made to the template later do n
 
 To run: open `Assets/ResXR/Base Scene/Base Scene.unity`, make sure the Base Scene is first in **File → Build
 Profiles**, then press Play (Quest Link) or **Build And Run**.
+
+### Where things are
+
+| What | Path |
+| ---- | ---- |
+| Base Scene (ResXR hands only) | `Assets/ResXR/Base Scene/Base Scene.unity` |
+| Base Scene + Meta interaction rig | `Assets/ResXR/Base Scene/Base Scene With Meta Interactions.unity` |
+| Player (hands, pinch, fade, palm toucher) | `Assets/ResXR/Base Scene/ResXRPlayer/ResXR Player.prefab` |
+| Room calibrator | `Assets/ResXR/Base Scene/ResXR_RoomCalibrator/ResXR_RoomCalibrator.prefab` |
+| Calibration on/off | `ResXR_ProjectInitializer` in the Base Scene |
+| Recording on/off | `ResXR_DataManager` in the Base Scene |
+| Panels, buttons, slider, position marks | `Assets/ResXR/Demo Experiments/Shared Utils/` |
+| Flow scripts (Session → Task → Trial) | `Assets/ResXR/Flow Management/` |
+| Meta interaction examples | `Assets/TAUXR/Meta components/` |
+| Meta UI Set add-on | `Assets/TAUXR/UI Set/` |
+
+**Which Base Scene?** Both have ResXR's own hand tracking (hands, pinch, `Toucher` fingertip/palm colliders), which is
+all that ResXR's buttons, panels, slider, pinch-grab and the calibrator need — use the plain **Base Scene** by default.
+Use **Base Scene With Meta Interactions** only when the project uses Meta's interaction system: the UI Set add-on,
+Meta poke/ray canvases, Meta grab interactables, the `Meta components` examples or the Live Monitor. In that scene both
+hand systems run side by side.
 
 Room calibration (lining the virtual scene up with a physical room) is opt-in, as in ResXR — the setup steps are in
 [STUDIO_SETUP.md](STUDIO_SETUP.md).
@@ -90,6 +111,7 @@ template changes:
 | `ResXRPlayer/ResXR Hand/ResXRHand.cs`, `ResXR Hand.prefab` | Palm toucher |
 | `ResXRPlayer/ResXR Player.prefab` | Fade overlay quad moved from 0.10 to 0.11 m (it sat on the camera's near clip plane and flickered) |
 | `Pincher.cs`, `ResXRPlayer.cs`, `ImagesRating.cs`, `ListExtensions.cs` | No longer depend on the Visual Scripting package (removed `using` lines; Visual Scripting helpers replaced with the standard Unity calls) |
+| `Meta components/` (folder) | Moved to `Assets/TAUXR/Meta components/` (`ResXR_Template_Documentation.md` still shows the old path) |
 | Base Scenes, demo scenes, image import settings | Wiring for the above; mipmaps on |
 
 ## Updating from ResXR
