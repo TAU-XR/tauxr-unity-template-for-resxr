@@ -50,6 +50,17 @@ Room calibration (lining the virtual scene up with a physical room) is opt-in, a
   for every newly imported image (less shimmer at a distance in VR).
 - **Palm toucher** — buttons and other `Toucher` targets react to the palm as well as the index fingertip.
   Switch off per project with **Use Palm Toucher** on the `ResXR Hand` prefab.
+- **Recording on/off switch** — `Recording Enabled` on `ResXR_DataManager`. Off = nothing written to disk and all
+  logging calls ignored. What else to switch off is in [STUDIO_SETUP.md](STUDIO_SETUP.md#recording-on--off).
+- **Room calibrator** — wires itself (hand pivots, passthrough), shows in-headset instructions and pinch-hold
+  progress, and lets you check the alignment before confirming. Still opt-in, as in ResXR.
+- **Meta UI Set add-on** (optional) — Quest-style buttons, sliders, dialogs and menus from Meta's Interaction SDK,
+  alongside ResXR's own UI. See [Assets/TAUXR/UI Set/README.md](Assets/TAUXR/UI%20Set/README.md).
+- **Quest render settings** — `URP-Quest` shadow distance 25 m with 2 cascades (was 150 m / 4); unused URP pipeline
+  assets removed so only the active one is left.
+- **Git setup** — `.gitattributes` keeps line endings consistent across machines and lets Unity's Smart Merge handle
+  scenes and prefabs (see [UPSTREAM_UPDATES.md](UPSTREAM_UPDATES.md)); `build_info.json` (rewritten on every build) is
+  no longer tracked.
 - **Package name** `com.tauxr.studiotemplate` — change it per project (see the checklist).
 - Removed packages a Quest project doesn't use: Ads, In-App Purchasing, Analytics, Version Control, Multiplayer
   Center, Visual Scripting, 2D Tilemap. Removed the Meta XR Simulator package (no version works with SDK 205 —
@@ -62,13 +73,20 @@ template changes:
 
 | File | Change |
 | ---- | ------ |
-| `Base Scene/ResXR_RoomCalibrator/EnvironmentCalibrator.cs`, `ResXR_RoomCalibrator.prefab` | Hides the calibrator after Confirm; Redo clears old marks; recorded points shown green/cyan so alignment can be checked before confirming; pinch-hold progress in the log |
-| `Utilities/General Scripts/ResXRHeadsetServices.cs` | Fixes `Instance` staying null (private `Awake` hid the singleton's), which crashed the first passthrough toggle; clears the eye camera to transparent while passthrough is on |
+| `Base Scene/ResXR_RoomCalibrator/EnvironmentCalibrator.cs`, `ResXR_RoomCalibrator.prefab` | Hides the calibrator after Confirm; Redo clears old marks and loops instead of recursing; recorded points shown green/cyan so alignment can be checked before confirming; in-headset status text with pinch-hold progress; hand pivots follow the hands when unwired; adds `ResXRHeadsetServices` if the scene has none |
+| `Base Scene/ProjectInitializer.cs` | Clear error instead of a crash when calibration is on but there is no calibrator in the Base Scene |
+| `Base Scene/ResXRDataManager/ResXRDataManager.cs` | `Recording Enabled` master switch |
+| `Utilities/General Scripts/FollowTransform.cs` | Adds `HasTarget` |
+| `Utilities/General Scripts/ResXRSingleton.cs` | A duplicate singleton stops after destroying itself (no longer runs its setup) |
+| `Flow Management/SessionManager.cs` | `BetweenTasksFlow` no longer throws `NotImplementedException` (crashed after the first task) |
+| `Demo Experiments/Shared Utils/Simple Button/SimpleButton.cs` | Counts touchers, so one push with fingertip + palm (or two hands) presses once |
+| `Utilities/General Scripts/ResXRHeadsetServices.cs` | Fixes `Instance` staying null (private `Awake` hid the singleton's), which crashed the first passthrough toggle; clears the eye camera to transparent while passthrough is on; finds OVRManager and the eye camera when not assigned |
 | `Demo Experiments/Shared Utils/Instructions Panel/Scripts/InstructionsPanel.cs` | Fixes the one-frame full-size flash before the show animation; gentler grow-in (from 90%); optional show delay and sound |
 | `Demo Experiments/Shared Utils/Instructions Panel/Scripts/InstructionsPanelWithConfirmation.cs` | Adds `ShowUntilDismissed` (hide on button press *or* by code) |
 | `Demo Experiments/Shared Utils/Player Position Mark/Scripts/PositionMarkTriggerZone.cs` | Adds `IsHeadInPositionAndFacing` — reliable check when the mark is shown where the participant already stands |
 | `Demo Experiments/Shared Utils/Slider/Scripts/ResXRSlider.cs` | Removes `[SerializeField]` from a property (compile error in Unity 6.3) |
 | `Base Scene/SceneManagement/ResXRSceneManager.cs`, `ResXRPlayer/ResXRPlayer.cs`, `ProjectInitializer.cs` | Player Repositioner removed (script, prefab and its use in scenes) |
+| `ResXRPlayer/ResXRPlayer.cs` | `RecenterView()` implemented (it was empty); `CalibrateFloorHeight()` logs that it's not implemented instead of silently doing nothing |
 | `ResXRPlayer/ResXR Hand/ResXRHand.cs`, `ResXR Hand.prefab` | Palm toucher |
 | `ResXRPlayer/ResXR Player.prefab` | Fade overlay quad moved from 0.10 to 0.11 m (it sat on the camera's near clip plane and flickered) |
 | `Pincher.cs`, `ResXRPlayer.cs`, `ImagesRating.cs`, `ListExtensions.cs` | No longer depend on the Visual Scripting package (removed `using` lines; Visual Scripting helpers replaced with the standard Unity calls) |

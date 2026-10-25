@@ -11,6 +11,10 @@ public class SimpleButton : MonoBehaviour
     private Material originalMaterial;
     private bool disabled = false;
 
+    // number of Toucher colliders currently inside the button. A hand has several touchers (fingertip, palm),
+    // so the button only fires when the first one enters - otherwise one push presses it twice.
+    private int touchersInside = 0;
+
     private void Awake()
     {
         if (buttonGraphics == null)
@@ -44,17 +48,32 @@ public class SimpleButton : MonoBehaviour
         }
     }
 
+    // reset when disabled - OnTriggerExit is not called for colliders inside a disabled button
+    private void OnDisable()
+    {
+        touchersInside = 0;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (!Application.isPlaying)
             return;
 
-        if (disabled)
+        if (!other.gameObject.CompareTag("Toucher"))
             return;
 
-        if (other.gameObject.CompareTag("Toucher"))
-        {
-            SimpleButtonPressed.Invoke();
-        }
+        touchersInside++;
+        if (touchersInside > 1 || disabled)
+            return;
+
+        SimpleButtonPressed.Invoke();
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.gameObject.CompareTag("Toucher"))
+            return;
+
+        touchersInside = Mathf.Max(0, touchersInside - 1);
     }
 }

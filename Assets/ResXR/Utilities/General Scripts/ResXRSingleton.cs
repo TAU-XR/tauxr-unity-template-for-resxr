@@ -17,6 +17,7 @@ public class ResXRSingleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             Debug.LogWarning($"Multiple instances of singleton of type {typeof(T)} found in scene. Destroying the current one.");
             Destroy(gameObject);
+            return;
         }
 
         DoInAwake();

@@ -49,8 +49,7 @@ public class SessionManager : ResXRSingleton<SessionManager>
 
     private async UniTask BetweenTasksFlow()
     {
+        // runs after each task, before the next one starts (e.g. a break screen). Empty by default.
         await UniTask.Yield();
-
-        throw new NotImplementedException();
     }
 }

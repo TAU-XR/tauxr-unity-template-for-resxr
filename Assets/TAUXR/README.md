@@ -7,6 +7,7 @@ so `Assets/ResXR` stays as close as possible to upstream ResXR and is easier to 
 | ------ | -------------- |
 | `Scripts/` | Reusable runtime scripts (e.g. `QuestFoveationSetup`) |
 | `Editor/` | Editor-only tools and import defaults (e.g. `TAUXRTextureImportDefaults`) |
+| `UI Set/` | Optional add-on for Meta's Quest-style UI Set — see [UI Set/README.md](UI%20Set/README.md) |
 
 Add `Prefabs/`, `Materials/`, etc. when there is something to put in them.
 

@@ -29,25 +29,27 @@ In **Edit → Project Settings → Player**:
 - [ ] **Room calibration** — only if the virtual scene must line up with a real room (see FlipMazeResXR for a
       working example). It is off by default and the calibrator is not in the Base Scene:
       1. Drag `Assets/ResXR/Base Scene/ResXR_RoomCalibrator/ResXR_RoomCalibrator.prefab` into the Base Scene.
-      2. Add a **ResXRHeadsetServices** component to it; drag in the **OVRManager** and the **CenterEyeAnchor** camera
-         (needed for passthrough during calibration).
-      3. On the prefab's `InstructionsPivot_RightHand` / `_LeftHand`, set the follow targets to the player's hand anchors.
-      4. Place `VirtualReferencePoint1` (centre) and `VirtualReferencePoint2` (forward) on the two physical marks you
+      2. Place `VirtualReferencePoint1` (centre) and `VirtualReferencePoint2` (forward) on the two physical marks you
          will touch in the room.
-      5. On `ResXR_ProjectInitializer`, tick **Should Project Use Calibration**.
+      3. On `ResXR_ProjectInitializer`, tick **Should Project Use Calibration** (and **Should Calibrate On Editor** to
+         test it over Quest Link).
 
-      On the headset: touch each mark with the LEFT index fingertip and pinch-hold the RIGHT hand. The two recorded
-      points appear green and cyan — check they sit on the guides, then Confirm (or Redo).
+      Everything else wires itself at runtime: the hand pivots follow the player's hands, and passthrough works even if
+      the Base Scene has no `ResXRHeadsetServices` (the calibrator adds one).
+
+      On the headset, text in front of you says what to do next: touch each mark with the LEFT index fingertip and
+      pinch-HOLD the RIGHT hand until it reaches 100%. The two recorded points appear green and cyan — check they sit on
+      the guides, then press Confirm (or Redo to mark again).
 
 ## 5. Choose what to keep
-- [ ] **Not recording data?** In the Base Scene, on `ResXR_DataManager`, untick the recording options you don't need
-      (eyes, hands, body, face). ResXR still writes a small session folder; it does no harm.
-- [ ] **Recording data?** See the ResXR docs: https://docs.resxr.org/unity/recording/
+- [ ] **Recording data or not** — see [Recording on / off](#recording-on--off) below.
 - [ ] **Demo experiments** (`Assets/ResXR/Demo Experiments`): you may delete the Binary Choice, Maze and Museum folders
       once you no longer need them as examples. **Keep `Shared Utils`** — panels, buttons, slider and position marks
       used across projects live there.
 - [ ] **Palm toucher**: on the `ResXR Hand` prefab, untick **Use Palm Toucher** if palms cause accidental button
       presses in this project.
+- [ ] **Quest-style UI** (optional): Meta's UI Set is available as an add-on — see `Assets/TAUXR/UI Set/README.md`.
+      It needs the `Base Scene With Meta Interactions`.
 - [ ] **Foveated rendering**: `TAUXR_QuestFoveation` in the Base Scene is set to High + dynamic. Lower it if the edges
       of the view look blurry for this project.
 
@@ -60,3 +62,39 @@ In **Edit → Project Settings → Player**:
 - [ ] Connect a Quest, **File → Build And Run**.
 - [ ] Check: hands tracked, pinch works, buttons react to fingertip and palm, fade in/out has no flicker.
 - [ ] Commit and push.
+
+---
+
+## Recording on / off
+
+The template ships with recording **on** (ResXR's default). One switch controls it.
+
+### Turning recording OFF (projects that don't collect data)
+
+1. **Base Scene → `ResXR_DataManager` → Recording → untick `Recording Enabled`.**
+   With it off, nothing is written to the headset: no session folder, no CSV or JSON files. Calls to
+   `ReportEvent`, `LogCustom`, `TrialsData.Log` and `LogLineToFile` are silently ignored, so the flow scripts and demo
+   code don't need changes. The Recording Options below the switch have no effect while it's off.
+2. Switch off what only exists for recording, unless the project uses it for interaction:
+
+   | Where | Setting | Turn off when |
+   | ----- | ------- | ------------- |
+   | **Meta XR project settings** (Edit → Project Settings → Meta XR, or `Assets/Oculus/OculusProjectConfig.asset`) | Body Tracking Support, Face Tracking Support, Eye Tracking Support → **None** | the project doesn't use them. Otherwise the app asks the participant for those permissions at startup. |
+   | **Base Scene → `ResXR_Player`** | `Is Eye Tracking Enabled`, `Is Face Tracking Enabled` | no gaze-based interaction / no face expressions in the experience. Saves processing every frame. |
+   | **Instructions panels** (`Shared Utils/Instructions Panel`) | `Collect Eye Gaze` | always safe to untick when not recording — it only adds a gaze collider for logging. |
+   | **File → Build Profiles** | the Live Monitor scene (`Assets/ResXR/Base Scene/ResXRDataManager/Live Monitor/...`) | always — it only displays recorded data. |
+
+   Keep `ResXR_DataManager` itself in the Base Scene — other scripts expect it to exist.
+
+### Turning recording ON
+
+1. **`ResXR_DataManager` → tick `Recording Enabled`**, then choose what to record under **Recording Options**
+   (head/nodes, eyes, hands, body, face, system status, custom transforms).
+2. Turn on the matching tracking: Meta XR project settings (Eye / Face / Body Tracking Support → Supported or
+   Required) and `ResXR_Player` → `Is Eye Tracking Enabled` / `Is Face Tracking Enabled`. Eye and face tracking need a
+   Quest Pro.
+3. Data is written to `Application.persistentDataPath` on the headset (`/sdcard/Android/data/<package name>/files/`),
+   one folder per session. In the editor it goes to Unity's persistent data path, or tick `Export In Editor` and set
+   `Save File Path` to choose a folder (left empty, it uses `<system temp>/ResXR_EditorLogs`).
+4. Full reference: [ResXR recording docs](https://docs.resxr.org/unity/recording/) and
+   [data output](https://docs.resxr.org/unity/data-output/).

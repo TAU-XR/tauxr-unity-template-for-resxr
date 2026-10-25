@@ -19,8 +19,15 @@ public class ProjectInitializer : MonoBehaviour
 
         if (shouldCalibrateOnBuild || shouldCalibrateOnEditor)
         {
-            // trigger calibration on BaseScene
-            await EnvironmentCalibrator.Instance.CalibrateRoom();
+            if (EnvironmentCalibrator.Instance == null)
+            {
+                Debug.LogError("[ProjectInitializer] Calibration is on, but there is no ResXR_RoomCalibrator in the Base Scene - skipping calibration.");
+            }
+            else
+            {
+                // trigger calibration on BaseScene
+                await EnvironmentCalibrator.Instance.CalibrateRoom();
+            }
         }
 
         // after environment was calibrated- load first scene

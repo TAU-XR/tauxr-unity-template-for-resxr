@@ -22,6 +22,17 @@ public class ResXRHeadsetServices : ResXRSingleton<ResXRHeadsetServices>
     // and causing a NullReferenceException the first time anything calls SetPassthrough.
     protected override void DoInAwake()
     {
+        // fall back to finding the references, so the component also works when added at runtime
+        if (_ovrManager == null)
+        {
+            _ovrManager = FindFirstObjectByType<OVRManager>();
+        }
+        if (_eyeCamera == null)
+        {
+            OVRCameraRig rig = FindFirstObjectByType<OVRCameraRig>();
+            if (rig != null && rig.centerEyeAnchor != null) _eyeCamera = rig.centerEyeAnchor.GetComponent<Camera>();
+        }
+
         if(_ovrManager == null)
         {
             Debug.LogError("No OVRManager found in ResXR Headset Services. Make sure to drag it in Base Scene");

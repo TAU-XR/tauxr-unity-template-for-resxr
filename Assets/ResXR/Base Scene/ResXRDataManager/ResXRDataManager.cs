@@ -149,6 +149,13 @@ namespace ResXRData
     {
         #region fields and properties
 
+        // TAUXR: master switch. When off, nothing is recorded or written: no session folder, no CSV/JSON files,
+        // and ReportEvent / LogCustom / LogLineToFile calls are ignored, so experiment code can stay as is.
+        [Header("Recording")]
+        [Tooltip("Turn off for projects that don't collect data. Nothing is written to disk and all logging calls are ignored.")]
+        public bool recordingEnabled = true;
+        public bool RecordingEnabled => recordingEnabled;
+
         [Header("Editor Export")]
         public bool exportInEditor = false;
 
@@ -255,6 +262,12 @@ namespace ResXRData
             // 0) session time suffix
             sessionTime = DateTime.UtcNow.ToString("yyyy.MM.dd_HH-mm");
 
+            if (!recordingEnabled)
+            {
+                Debug.Log("[ResXRDataManager] Recording is disabled - no data will be written.");
+                return;
+            }
+
             // 1) Output directory
             if (Application.isEditor && exportInEditor)
             {
@@ -351,6 +364,8 @@ namespace ResXRData
 
         private async void Start()
         {
+            if (!recordingEnabled) return;
+
             if (ResXRPlayer.Instance != null && ResXRPlayer.Instance.EyeTracker != null)
                 ResXRPlayer.Instance.EyeTracker.EnableSeparateEyeRaycasts = recordingOptions.includeSeparateEyesGaze;
 
@@ -362,6 +377,8 @@ namespace ResXRData
 
         private void FixedUpdate()
         {
+            if (!recordingEnabled) return;
+
             // sample time
             float t = Time.realtimeSinceStartup;
 
@@ -425,6 +442,8 @@ namespace ResXRData
 
         private void OnDestroy()
         {
+            if (!recordingEnabled) return;
+
             // collectors
             for (int i = 0; i < _continuousCollectors.Count; i++)
             {
@@ -504,7 +523,7 @@ namespace ResXRData
         /// </summary>
         public void LogCustom(CustomDataClass data)
         {
-            if (data == null) return;
+            if (!recordingEnabled || data == null) return;
             CustomCsvFromDataClass.Write(data);
         }
 
@@ -515,7 +534,7 @@ namespace ResXRData
         /// </summary>
         public void LogCustom(Func<CustomDataClass> make)
         {
-            if (make == null) return;
+            if (!recordingEnabled || make == null) return;
             var inst = make();
             if (inst == null) return;
             CustomCsvFromDataClass.Write(inst);

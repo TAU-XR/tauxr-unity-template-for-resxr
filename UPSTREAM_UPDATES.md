@@ -30,6 +30,17 @@ git remote add upstream https://github.com/ResXR/resxr-unity-research-template.g
 git remote set-url --push upstream DISABLED
 ```
 
+**Optional — Unity Smart Merge** (merges scenes and prefabs much better than plain git; `.gitattributes` already
+points `.unity`, `.prefab`, `.asset`, `.meta` etc. at it). Run once per machine:
+
+```bash
+git config --global merge.unityyamlmerge.name "Unity SmartMerge"
+git config --global merge.unityyamlmerge.driver "'C:/Program Files/Unity/Hub/Editor/6000.3.24f1/Editor/Data/Tools/UnityYAMLMerge.exe' merge -p %O %B %A %A"
+git config --global merge.unityyamlmerge.recursive binary
+```
+
+Without it git simply uses its normal merge for those files.
+
 **Each update:**
 
 ```bash

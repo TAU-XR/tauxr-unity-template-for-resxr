@@ -116,14 +116,17 @@ public class ResXRPlayer : ResXRSingleton<ResXRPlayer>
         }
     }
 
+    // Asks the headset to re-centre the view on its current position and facing (like holding the Meta button).
+    // Don't use it in calibrated projects - it moves the tracking origin and breaks the room calibration.
     public void RecenterView()
     {
-        // IMPLEMENT
+        OVRManager.display.RecenterPose();
     }
 
+    // Not implemented in ResXR yet. Kept so existing calls still compile.
     public void CalibrateFloorHeight()
     {
-        // IMPLEMENT
+        Debug.LogWarning("[ResXRPlayer] CalibrateFloorHeight is not implemented - nothing was changed.");
     }
 
     public void SetPassthrough(bool state)

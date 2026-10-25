@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 
 public class EnvironmentCalibrator : ResXRSingleton<EnvironmentCalibrator>
@@ -19,6 +20,19 @@ public class EnvironmentCalibrator : ResXRSingleton<EnvironmentCalibrator>
     private FollowTransform
         _playerMarkedPosition; // a sphere following the exact position players mark when they pinch. Changes every frame according to players' hand.
 
+    // pivots that follow the hands, for hand-attached instructions. If their target is left empty they follow
+    // the player's hand anchors, so the prefab works without scene wiring.
+    [SerializeField] private FollowTransform _instructionsPivotLeft;
+    [SerializeField] private FollowTransform _instructionsPivotRight;
+
+    [Header("Status text")]
+    // in-headset text telling the operator what to do next and showing pinch-hold progress.
+    [SerializeField] private TextMeshPro _statusText;
+    [SerializeField] private float _statusTextDistance = 0.6f;     // metres in front of the head
+    [SerializeField] private float _statusTextHeightOffset = 0.15f; // metres below head height
+    private const float STATUS_TEXT_FOLLOW_SPEED = 4f;
+    private string _lastLoggedStatus;
+
     private float PINCH_HOLD_DURATION = 1f;
 
     // gets 2 points where player touches during the calibration action.
@@ -30,6 +44,35 @@ public class EnvironmentCalibrator : ResXRSingleton<EnvironmentCalibrator>
     public async UniTask CalibrateRoom()
     {
         Init();
+
+        // a Redo starts the marking again; loops until the operator confirms.
+        while (true)
+        {
+            await MarkAndAlign();
+
+            DisplayConfirmationButtons();
+
+            while (!_shouldRedo && !_shouldConfirm)
+            {
+                await UniTask.Yield();
+            }
+
+            if (_shouldConfirm) break;
+
+            // Clear this pass's marks before re-marking. Without this each Redo abandons its
+            // predecessors (they're parented to the rig), leaving a trail of stray spheres.
+            _shouldRedo = false;
+            _btnConfirm.gameObject.SetActive(false);
+            _btnRedo.gameObject.SetActive(false);
+            DestroyReferenceMarks();
+        }
+
+        _shouldConfirm = false;
+        EndCalibration();
+    }
+
+    private async UniTask MarkAndAlign()
+    {
         EnterCalibrationMode();
         SetStatus("Calibration started.\nLEFT fingertip on the CENTRE mark, then pinch-HOLD the RIGHT hand.");
 
@@ -49,29 +92,7 @@ public class EnvironmentCalibrator : ResXRSingleton<EnvironmentCalibrator>
 
         // disable passthrough & show model
         ExitCalibrationMode();
-
-        DisplayConfirmationButtons();
-
-        while (!_shouldRedo && !_shouldConfirm)
-        {
-            await UniTask.Yield();
-        }
-
-        if (_shouldRedo)
-        {
-            // we will call Calibrate Room again to redo the calibration.
-            _shouldRedo = false;
-            // Clear this pass's marks before re-marking. Without this each Redo abandons its
-            // predecessors (they're parented to the rig), leaving a trail of stray spheres.
-            DestroyReferenceMarks();
-            await CalibrateRoom();
-        }
-        else
-        {
-            // if we got here it means _shouldConfirm = true and we can end the task.
-            _shouldConfirm = false;
-            EndCalibration();
-        }
+        SetStatus("Check: green should sit on the centre guide, cyan on the forward guide.\nConfirm, or Redo if they are off.");
     }
 
     private void Init()
@@ -87,6 +108,50 @@ public class EnvironmentCalibrator : ResXRSingleton<EnvironmentCalibrator>
 
         _player = ResXRPlayer.Instance.transform;
         //    WaitForRightPinchHold = ResXRPlayer.Instance.WaitForPinchHold(HandType.Right, PINCH_HOLD_DURATION, true);
+
+        if (_instructionsPivotLeft != null && !_instructionsPivotLeft.HasTarget)
+            _instructionsPivotLeft.Init(ResXRPlayer.Instance.LeftHand);
+        if (_instructionsPivotRight != null && !_instructionsPivotRight.HasTarget)
+            _instructionsPivotRight.Init(ResXRPlayer.Instance.RightHand);
+
+        // passthrough is switched through ResXRHeadsetServices. If the Base Scene doesn't have one,
+        // add it here (it finds the OVRManager and eye camera by itself).
+        if (ResXRHeadsetServices.Instance == null)
+        {
+            gameObject.AddComponent<ResXRHeadsetServices>();
+        }
+
+        if (_statusText != null)
+        {
+            _statusText.gameObject.SetActive(true);
+            PlaceStatusText(true);
+        }
+    }
+
+    private void Update()
+    {
+        if (_statusText != null && _statusText.gameObject.activeInHierarchy)
+        {
+            PlaceStatusText(false);
+        }
+    }
+
+    // keeps the status text in front of the operator's head, facing them. Follows lazily so it doesn't jitter.
+    private void PlaceStatusText(bool snap)
+    {
+        Transform head = ResXRPlayer.Instance != null ? ResXRPlayer.Instance.PlayerHead : null;
+        if (head == null) return;
+
+        Vector3 forwardFlat = Vector3.ProjectOnPlane(head.forward, Vector3.up).normalized;
+        if (forwardFlat.sqrMagnitude < 0.0001f) forwardFlat = head.forward;
+
+        Vector3 targetPosition = head.position + forwardFlat * _statusTextDistance - Vector3.up * _statusTextHeightOffset;
+        Quaternion targetRotation = Quaternion.LookRotation(targetPosition - head.position, Vector3.up);
+
+        Transform text = _statusText.transform;
+        float t = snap ? 1f : 1f - Mathf.Exp(-STATUS_TEXT_FOLLOW_SPEED * Time.deltaTime);
+        text.SetPositionAndRotation(Vector3.Lerp(text.position, targetPosition, t),
+                                    Quaternion.Slerp(text.rotation, targetRotation, t));
     }
 
     private void EnterCalibrationMode()
@@ -130,6 +195,7 @@ public class EnvironmentCalibrator : ResXRSingleton<EnvironmentCalibrator>
         _playerMarkedPosition.gameObject.SetActive(false);
         _btnConfirm.gameObject.SetActive(false);
         _btnRedo.gameObject.SetActive(false);
+        if (_statusText != null) _statusText.gameObject.SetActive(false);
 
         // Hide the whole calibrator so its guide points / centre don't overlap the experiment.
         // Safe to disable the hosting GameObject here: this is the last statement of the flow,
@@ -254,7 +320,15 @@ public class EnvironmentCalibrator : ResXRSingleton<EnvironmentCalibrator>
 
     private void SetStatus(string message)
     {
-        Debug.Log("[Calibration] " + message.Replace("\n", " | "));
+        if (_statusText != null) _statusText.text = message;
+
+        // the hold progress updates every frame - log only when the step changes
+        string firstLine = message.Split('\n')[0];
+        if (firstLine != _lastLoggedStatus)
+        {
+            Debug.Log("[Calibration] " + message.Replace("\n", " | "));
+            _lastLoggedStatus = firstLine;
+        }
     }
 
     // called when the redo calibration hold button is touched

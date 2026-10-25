@@ -24,6 +24,7 @@ public class FollowTransform : MonoBehaviour
         _target= target;
     }
 
+    public bool HasTarget => _target != null;
     public Vector3 Position => transform.position;
     public Quaternion Rotation => transform.rotation;
 }
