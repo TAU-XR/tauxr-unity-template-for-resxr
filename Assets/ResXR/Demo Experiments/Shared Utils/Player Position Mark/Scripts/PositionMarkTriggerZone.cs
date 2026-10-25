@@ -19,6 +19,34 @@ public class PositionMarkTriggerZone : MonoBehaviour
     public event Action<GameObject> OnPlayerEnter;
 
     private bool hasTriggered = false;
+    private Collider _collider;
+
+    private void Awake()
+    {
+        _collider = GetComponent<Collider>();
+    }
+
+    // Physics-independent check: is `head` inside this trigger's collider AND facing within
+    // allowedAngle of the target direction? Unity does NOT reliably fire OnTriggerStay for a
+    // collider that is already overlapping when this trigger is enabled/teleported around a
+    // stationary head (and the one-shot `hasTriggered` latch can also persist from a prior use),
+    // so a caller that places the zone around the player — rather than having the player walk in —
+    // should POLL this every frame instead of subscribing to OnPlayerEnter.
+    public bool IsHeadInPositionAndFacing(Transform head)
+    {
+        if (_collider == null)
+        {
+            return false;
+        }
+
+        Vector3 headPos = head.position;
+        if ((_collider.ClosestPoint(headPos) - headPos).sqrMagnitude > 0.0001f)
+        {
+            return false; // head is outside the trigger volume
+        }
+
+        return Vector3.Angle(head.forward, GetTargetDirection()) <= allowedAngle;
+    }
 
     private void OnTriggerStay(Collider other)
     {

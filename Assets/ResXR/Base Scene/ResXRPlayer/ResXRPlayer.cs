@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using System.Threading;
 
@@ -54,7 +53,7 @@ public class ResXRPlayer : ResXRSingleton<ResXRPlayer>
             EyeTracker.Init();
         if (IsFaceTrackingEnabled)
         {
-            ovrRig.AddComponent<OVRFaceExpressions>();
+            ovrRig.gameObject.AddComponent<OVRFaceExpressions>();
         }
     }
 
@@ -115,29 +114,6 @@ public class ResXRPlayer : ResXRSingleton<ResXRPlayer>
         {
             Debug.Log($"[ResXRPlayer] Fade cancelled (was heading to {targetColor} over {duration}s)");
         }
-    }
-
-    public void RepositionPlayer(PlayerRepositioner repositioner)
-    {
-        RepositionAfterHeadsetLoaded(repositioner).Forget();
-    }
-
-    private async UniTask RepositionAfterHeadsetLoaded(PlayerRepositioner repositioner)
-    {
-        Vector3 position, forward;
-        position = repositioner.transform.position;
-        forward = repositioner.transform.forward;
-        Vector3 initialHeadPosition = PlayerHead.position;
-
-        await UniTask.WaitUntil(() => OVRManager.isHmdPresent && PlayerHead.position != initialHeadPosition);   // if head moved -> headset initiallzied
-
-        // rotate
-        transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
-
-        // move
-        Vector3 headOffset = position - PlayerHead.position;
-        if (repositioner.Type == ERepositionType.FloorLevel) headOffset.y = 0; // cancel height change.
-        transform.position += headOffset;
     }
 
     public void RecenterView()

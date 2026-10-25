@@ -22,6 +22,11 @@ public class ResXRHand : MonoBehaviour
     public PinchManager PinchManager => _pinchManager;
     [SerializeField] private PinchingConfiguration _pinchingConfiguration;
 
+    // TAUXR: a "Toucher" collider on the palm, so buttons and other touch targets react to the whole hand,
+    // not just the index fingertip. Turn off per project if palms cause accidental presses.
+    [SerializeField] private bool _usePalmToucher = true;
+    [SerializeField] private GameObject _palmToucher;
+
     public SkinnedMeshRenderer _handSMR;
     private Tween _visibilityTween;
     private Sequence _pinchVisibilitySequence;
@@ -31,6 +36,12 @@ public class ResXRHand : MonoBehaviour
     {
         _ovrSkeleton = GetComponentInChildren<OVRSkeleton>();
         _pincher = GetComponentInChildren<Pincher>();
+
+        // must run before collecting HandColliders - inactive ones are skipped and never updated
+        if (_palmToucher != null)
+        {
+            _palmToucher.SetActive(_usePalmToucher);
+        }
 
         _handColliders = GetComponentsInChildren<HandCollider>().ToList();
         _handSMR = GetComponentInChildren<SkinnedMeshRenderer>();

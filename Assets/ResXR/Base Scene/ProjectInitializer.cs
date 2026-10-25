@@ -24,7 +24,7 @@ public class ProjectInitializer : MonoBehaviour
         }
 
         // after environment was calibrated- load first scene
-        ResXRSceneManager.Instance.Init(_shouldProjectUseCalibration);
+        ResXRSceneManager.Instance.Init();
     }
 
 }

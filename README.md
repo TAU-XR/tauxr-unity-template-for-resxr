@@ -1,61 +1,95 @@
-# ResXR Unity Research Template
+# TAUXR Studio Unity Template
 
-A Unity 6 project template for building XR behavioral experiments that run standalone on Meta Quest headsets. Records head, hand, eye, face, and body tracking at 100 Hz (Unity's `FixedUpdate`) alongside experiment events and custom data tables, writing everything to per-session CSV files and a `SessionMetadata.json` sidecar. A persistent Base Scene holds `ResXRPlayer` (tracking) and `ResXRDataManager` (recording); experiment scenes load additively on top and are organized with a Session → Task → Trial flow hierarchy. It is a "clear box" template: researchers own and modify every script directly rather than working around opaque base classes.
+The starting point for every TAUXR Unity XR project for Meta Quest.
 
-This template is the recording half of ResXR; the per-session packages it produces are processed by the [`resxr-python-pipeline`](https://github.com/ResXR/resxr-python-pipeline) into Motion-BIDS datasets. The two share no code — only the [output file format](https://docs.resxr.org/unity/data-output/).
+It is built on the [ResXR Unity Research Template](https://github.com/ResXR/resxr-unity-research-template)
+and adds what the studio needs: newer Unity and Meta SDK versions, fixes from our own projects, and shared studio
+tools. Projects that record data use ResXR's recording pipeline as usual; projects that don't simply leave it unused.
 
-## 📖 Full documentation
+ResXR itself is not modified — it stays as it is and available for everyone. All studio changes live in this repo.
 
-**[https://docs.resxr.org/unity/](https://docs.resxr.org/unity/)** — installation, quickstart, paradigms, recording options, data output, architecture, scripting API, and extension guide. The pages below are the source of truth; this README is only a quickstart.
+| | |
+| --- | --- |
+| **Unity** | 6000.3.24f1 (Unity 6.3 LTS) with Android Build Support |
+| **Meta XR SDK** | 205.0.0 (Core, MR Utility Kit, Haptics, Interaction OVR, Platform) · Audio 85.0.0 · Voice 85.0.1 |
+| **Headsets** | Meta Quest 2 / 3 / 3S / Pro (eye and face tracking need Quest Pro) |
+| **Based on** | ResXR `main` @ `6c3f0f8` (after v0.2.0) |
 
-## Install
+## Starting a new project
 
-1. Click **"Use this template"** on GitHub and clone your new repository.
-2. Open Unity Hub, click **Add project from disk**, and select the folder.
-   Unity 6000.0.68f1 with Android Build Support is required.
-   Runs on Meta Quest 2/3/Pro; **eye and face tracking require Quest Pro.**
-3. On first launch Unity auto-installs the Meta XR SDK (v 78.0.0) and all other package dependencies — no manual steps needed.
+1. On GitHub click **Use this template → Create a new repository** (owner `TAU-XR`).
+2. Clone it and open it in Unity Hub with **6000.3.24f1**.
+3. Follow the checklist in **[STUDIO_SETUP.md](STUDIO_SETUP.md)** (naming, scenes, what to keep or delete).
 
-See [Installation](https://docs.resxr.org/unity/installation/) for eye/face tracking setup on Quest Pro and Quest Link / Meta XR Simulator configuration.
+A new project is a **snapshot** of this template on the day you create it: it gets every version upgrade, fix and
+studio tool that is here at that moment. Changes made to the template later do not reach existing projects.
 
-## Run
+## What's in the template
 
-Open `Assets/ResXR/Base Scene/Base Scene.unity`, enable your target experiment in **File → Build Profiles** (Base Scene must be listed first), then press **Play** in the editor or use **File → Build And Run** for a device build.
+| Path | Contents |
+| ---- | -------- |
+| `Assets/ResXR/` | ResXR framework: Base Scene, `ResXRPlayer` (hands, pinch, fade), flow management (Session → Task → Trial), room calibrator, data recording, `Shared Utils` (panels, buttons, slider, position marks), demo experiments |
+| `Assets/TAUXR/` | Studio scripts shared by all projects — see [Assets/TAUXR/README.md](Assets/TAUXR/README.md) |
+| `Assets/Project Folder/` | Your project's own content. Start from `Main Scene.unity` |
+| `STUDIO_SETUP.md` | New-project checklist |
+| `PROJECT_README_TEMPLATE.md` | README to fill in for each new project |
+| `UPSTREAM_UPDATES.md` | Maintaining this template: pulling ResXR updates, upgrading Unity/SDK |
+| `ResXR_Template_Documentation.md` | ResXR's own full documentation (also online at https://docs.resxr.org/unity/) |
 
-Session data is written to `…/Temp/ResXR_EditorLogs/` in the editor, or `Application.persistentDataPath` (`/sdcard/Android/data/<bundle.id>/files/`) on device. Feed the session folder to `resxr-python-pipeline` for BIDS conversion.
+To run: open `Assets/ResXR/Base Scene/Base Scene.unity`, make sure the Base Scene is first in **File → Build
+Profiles**, then press Play (Quest Link) or **Build And Run**.
 
-Follow the [Quickstart](https://docs.resxr.org/unity/quickstart/) for a full walkthrough.
+Room calibration (lining the virtual scene up with a physical room) is opt-in, as in ResXR — the setup steps are in
+[STUDIO_SETUP.md](STUDIO_SETUP.md).
 
-## Documentation map
+## Studio additions
 
-| Topic | Page |
-| ----- | ---- |
-| Project setup and SDK configuration | [Installation](https://docs.resxr.org/unity/installation/) |
-| First experiment walkthrough | [Quickstart](https://docs.resxr.org/unity/quickstart/) |
-| Included demo experiments (Binary Choice, Maze, Museum) | [Paradigms](https://docs.resxr.org/unity/paradigms/) |
-| Recording subsystems and toggle reference | [Recording](https://docs.resxr.org/unity/recording/) |
-| Output folder layout, CSV/JSON schema | [Data Output](https://docs.resxr.org/unity/data-output/) |
-| Base Scene, ResXRPlayer, ResXRDataManager, flow hierarchy | [Architecture](https://docs.resxr.org/unity/architecture/) |
-| `ReportEvent`, `LogCustom`, `ResXRPlayer` API, flow hooks | [Scripting & API](https://docs.resxr.org/unity/scripting/) |
-| Custom collectors, multi-experiment projects, performance tuning | [Extending the Template](https://docs.resxr.org/unity/extending/) |
+- **`QuestFoveationSetup`** (in the Base Scene as `TAUXR_QuestFoveation`) — turns on fixed foveated rendering
+  (High, dynamic) for a cheap GPU saving. Tune per project.
+- **Mipmaps by default** — every image in the project generates mipmaps, and `TAUXRTextureImportDefaults` turns them on
+  for every newly imported image (less shimmer at a distance in VR).
+- **Palm toucher** — buttons and other `Toucher` targets react to the palm as well as the index fingertip.
+  Switch off per project with **Use Palm Toucher** on the `ResXR Hand` prefab.
+- **Package name** `com.tauxr.studiotemplate` — change it per project (see the checklist).
+- Removed packages a Quest project doesn't use: Ads, In-App Purchasing, Analytics, Version Control, Multiplayer
+  Center, Visual Scripting, 2D Tilemap. Removed the Meta XR Simulator package (no version works with SDK 205 —
+  use Quest Link or Meta's standalone simulator).
+
+## Changes from ResXR
+
+ResXR is licensed under Apache 2.0, which asks that modified files are listed. Files under `Assets/ResXR` that this
+template changes:
+
+| File | Change |
+| ---- | ------ |
+| `Base Scene/ResXR_RoomCalibrator/EnvironmentCalibrator.cs`, `ResXR_RoomCalibrator.prefab` | Hides the calibrator after Confirm; Redo clears old marks; recorded points shown green/cyan so alignment can be checked before confirming; pinch-hold progress in the log |
+| `Utilities/General Scripts/ResXRHeadsetServices.cs` | Fixes `Instance` staying null (private `Awake` hid the singleton's), which crashed the first passthrough toggle; clears the eye camera to transparent while passthrough is on |
+| `Demo Experiments/Shared Utils/Instructions Panel/Scripts/InstructionsPanel.cs` | Fixes the one-frame full-size flash before the show animation; gentler grow-in (from 90%); optional show delay and sound |
+| `Demo Experiments/Shared Utils/Instructions Panel/Scripts/InstructionsPanelWithConfirmation.cs` | Adds `ShowUntilDismissed` (hide on button press *or* by code) |
+| `Demo Experiments/Shared Utils/Player Position Mark/Scripts/PositionMarkTriggerZone.cs` | Adds `IsHeadInPositionAndFacing` — reliable check when the mark is shown where the participant already stands |
+| `Demo Experiments/Shared Utils/Slider/Scripts/ResXRSlider.cs` | Removes `[SerializeField]` from a property (compile error in Unity 6.3) |
+| `Base Scene/SceneManagement/ResXRSceneManager.cs`, `ResXRPlayer/ResXRPlayer.cs`, `ProjectInitializer.cs` | Player Repositioner removed (script, prefab and its use in scenes) |
+| `ResXRPlayer/ResXR Hand/ResXRHand.cs`, `ResXR Hand.prefab` | Palm toucher |
+| `ResXRPlayer/ResXR Player.prefab` | Fade overlay quad moved from 0.10 to 0.11 m (it sat on the camera's near clip plane and flickered) |
+| `Pincher.cs`, `ResXRPlayer.cs`, `ImagesRating.cs`, `ListExtensions.cs` | No longer depend on the Visual Scripting package (removed `using` lines; Visual Scripting helpers replaced with the standard Unity calls) |
+| Base Scenes, demo scenes, image import settings | Wiring for the above; mipmaps on |
+
+## Updating from ResXR
+
+Not usually needed. If ResXR releases something worth having, see [UPSTREAM_UPDATES.md](UPSTREAM_UPDATES.md).
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Original work © ResXR; modifications © TAUXR.
 
-The Meta XR SDK (auto-installed via UPM) is provided by Meta Platform Technologies, LLC under the Meta SDK License Agreement and is not covered by Apache 2.0.
-
-Additional vendored libraries (UniTask, NaughtyAttributes, DOTween) are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-## Contributing
-
-Contributions are welcome. Fork the repository, create a feature branch, and open a pull request.
+The Meta XR SDK (installed via the Package Manager) is provided by Meta Platform Technologies, LLC under the Meta SDK
+License Agreement and is not covered by Apache 2.0. Other bundled libraries (UniTask, NaughtyAttributes, DOTween)
+are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Acknowledgments
 
-ResXR builds on the early work of the [TAUXR Research Template](https://github.com/TAU-XR/TAUXR-Research-Template) by [TAU-XR Studio](https://github.com/TAU-XR) and [talmzip](https://github.com/talmzip).
-
-## Citation
+ResXR builds on the early work of the [TAUXR Research Template](https://github.com/TAU-XR/TAUXR-Research-Template)
+by TAU-XR Studio and [talmzip](https://github.com/talmzip). Please cite ResXR when publishing research made with it:
 
 ```bibtex
 @software{resxr,
@@ -64,7 +98,3 @@ ResXR builds on the early work of the [TAUXR Research Template](https://github.c
   url   = {https://github.com/ResXR/resxr-unity-research-template}
 }
 ```
-
-## Support
-
-**Email**: [resxr.toolkit@gmail.com](mailto:resxr.toolkit@gmail.com)

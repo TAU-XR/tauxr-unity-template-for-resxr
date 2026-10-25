@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using ResXRData;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ImagesRating : MonoBehaviour
@@ -14,7 +13,7 @@ public class ImagesRating : MonoBehaviour
     {
         foreach (SpriteRenderer image in imagesToRate)
         {
-            image.GameObject().SetActive(false);
+            image.gameObject.SetActive(false);
         }
     }
 
@@ -47,7 +46,7 @@ public class ImagesRating : MonoBehaviour
         ratingSlider.ResetValue();
         ratingPanel.Show(false).Forget();
         SpriteRenderer currentImage = imagesToRate[currentImageIndex];
-        currentImage.GameObject().SetActive(true);
+        currentImage.gameObject.SetActive(true);
         ratingSlider.gameObject.SetActive(true);
 
         float presentationStart = Time.realtimeSinceStartup;
@@ -58,7 +57,7 @@ public class ImagesRating : MonoBehaviour
         string imageName = currentImage.sprite.name;
 
         // hide image and rating panel and slider
-        currentImage.GameObject().SetActive(false);
+        currentImage.gameObject.SetActive(false);
         ratingPanel.Hide().Forget();
         ratingSlider.gameObject.SetActive(false);
 

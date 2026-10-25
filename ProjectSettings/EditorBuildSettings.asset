@@ -19,7 +19,7 @@ EditorBuildSettings:
     path: Assets/ResXR/Demo Experiments/Museum/Museum Experiment.unity
     guid: 2c6ded2a38da5f34f9c3cc5d3fbd6365
   - enabled: 0
-    path: Assets/Project Folder/New ResXRScene [Duplicate].unity
+    path: Assets/Project Folder/Main Scene.unity
     guid: bf6f75101b6b8074ba3ea6f3bf24e48d
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: df4bf4de266c0e44bafe9095d6e989e8, type: 2}

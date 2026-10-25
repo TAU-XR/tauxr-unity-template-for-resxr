@@ -20,13 +20,8 @@ public class ResXRSceneManager : ResXRSingleton<ResXRSceneManager>
     private string currentSceneName;
     public string CurrentSceneName => currentSceneName;
 
-    private bool _shouldRepositionPlayer;
-
-    // gets isProjectUsingCalibration to know whether to use PlayerRepositioner or not.
-    public void Init(bool isProjectUsingCalibration)
+    public void Init()
     {
-        // if project is being calibrated to a space then moving it to a PlayerRepositioner will ruin calibration.
-        _shouldRepositionPlayer = !isProjectUsingCalibration;
         _baseSceneName = SceneManager.GetSceneByBuildIndex(BaseSceneIndex).name;
         // the script assumes that Base Scene is always the first in the build order.
         if (Application.isEditor)
@@ -47,8 +42,6 @@ public class ResXRSceneManager : ResXRSingleton<ResXRSceneManager>
             Debug.LogWarning("Scene count is less than 2, no scene initialization");
             return;
         }
-
-        RepositionPlayerIfNeeded();
 
         // we assume that when played in editor we'll be in the right scene combination.
         for (int i = 0; i < SceneManager.sceneCount; i++)
@@ -87,8 +80,6 @@ public class ResXRSceneManager : ResXRSingleton<ResXRSceneManager>
         SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(sceneBuildIndex));
 
         currentSceneName = SceneManager.GetSceneByBuildIndex(sceneBuildIndex).name;
-        // reposition player accordingly to new scene
-        RepositionPlayerIfNeeded();
 
         await ResXRPlayer.Instance.FadeViewToColor(Color.clear, FADETOCLEARDURATION);
     }
@@ -104,9 +95,6 @@ public class ResXRSceneManager : ResXRSingleton<ResXRSceneManager>
         await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
         currentSceneName = sceneName;
-
-        // reposition player accordingly to new scene
-        RepositionPlayerIfNeeded();
 
         //await ResXRPlayer.Instance.FadeViewToColor(Color.clear, FADETOCLEARDURATION);
     }
@@ -131,16 +119,6 @@ public class ResXRSceneManager : ResXRSingleton<ResXRSceneManager>
         await SceneManager.UnloadSceneAsync(currentSceneName);
     }
 
-
-    private void RepositionPlayerIfNeeded()
-    {
-        // if project is being calibrated to a space then moving it to a PlayerRepositioner will ruin calibration.
-        if (!_shouldRepositionPlayer) return;
-
-        PlayerRepositioner repositioner = FindFirstObjectByType<PlayerRepositioner>();
-        if (repositioner == null) return;
-        ResXRPlayer.Instance.RepositionPlayer(repositioner);
-    }
 
     public async void RestartActiveScene()
     {
