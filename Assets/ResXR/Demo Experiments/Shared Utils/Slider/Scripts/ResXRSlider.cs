@@ -22,7 +22,7 @@ public class ResXRSlider : MonoBehaviour
     public float MinValue = 0f;
     public float MaxValue = 1f;
 
-    [SerializeField, ReadOnly] private float StepSize => (MaxValue - MinValue) / NumOfIntervals;
+    private float StepSize => (MaxValue - MinValue) / NumOfIntervals;
     [SerializeField] private string valueFormat = "F2";
     [SerializeField] private string valueUnitSymbol = "$";
     [Range(0f, 1f)]
