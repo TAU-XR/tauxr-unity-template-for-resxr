@@ -5,7 +5,9 @@
 # (see UPSTREAM_UPDATES.md). Without that git config, git falls back to its normal merge.
 *.unity        text merge=unityyamlmerge
 *.prefab       text merge=unityyamlmerge
-*.asset        text merge=unityyamlmerge
+# .asset is not forced to text: some are binary (LightingData.asset always is), and forcing text
+# converts their bytes to CRLF on Windows checkouts, corrupting them. `* text=auto` above detects which is which.
+*.asset        merge=unityyamlmerge
 *.mat          text merge=unityyamlmerge
 *.anim         text merge=unityyamlmerge
 *.controller   text merge=unityyamlmerge
